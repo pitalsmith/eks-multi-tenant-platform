@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: app-container
-          image: ecr.unresolved.uri/or-public/nginx:alpine
+          image: nginx:alpine
           ports:
             - containerPort: 80
           resources:
