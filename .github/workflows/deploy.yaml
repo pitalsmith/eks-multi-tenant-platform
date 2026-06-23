@@ -1,30 +1,50 @@
-name: Build and Push to ECR
+name: Deploy Backend API to EKS
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - 'src/backend/**'
+      - 'backend-api.yaml'
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
 
-      - name: Build, tag, and push image to ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: my-backend # Your repo name
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build, Tag, and Push Image to ECR
+      env:
+        ECR_REGISTRY: 763054201983.dkr.ecr.us-east-1.amazonaws.com
+        ECR_REPOSITORY: backend-api
+        IMAGE_TAG: latest
+      run: |
+        # Build the container using the src/backend directory context
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./src/backend
+        
+        # Push the fresh image to your AWS ECR Registry
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    - name: Update Kubeconfig for EKS
+      run: |
+        # Replace 'your-eks-cluster-name' with your actual AWS EKS cluster name
+        aws eks update-kubeconfig --region us-east-1 --name your-eks-cluster-name
+
+    - name: Rollout Restart Deployment
+      run: |
+        # Triggers Kubernetes to pull the new 'latest' image from ECR
+        kubectl rollout restart deployment backend-api -n apps
