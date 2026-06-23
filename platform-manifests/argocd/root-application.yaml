@@ -11,6 +11,8 @@ spec:
     repoURL: 'https://github.com/pitalsmith/internal-developer-platform.git'
     targetRevision: HEAD
     path: platform-manifests
+  directory:
+      recurse: true  
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: argocd
