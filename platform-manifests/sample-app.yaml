@@ -2,24 +2,23 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: demo-backend-svc
-  namespace: default
+  name: backend-api-service
+  namespace: apps       
 spec:
   ports:
-    - port: 80          # External port for the service mesh
-      targetPort: 8080  # The real internal port your Node.js container listens on
+    - port: 80
+      targetPort: 8080   
       protocol: TCP
   selector:
-    app: demo-backend
+    app: backend-api     
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: platform-demo-ingress
-  namespace: default
+  namespace: apps        
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
   rules:
@@ -29,13 +28,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: demo-backend-svc
-                port:
-                  number: 80  # Maps to the Service port, which securely routes to 8080
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: demo-frontend-svc
+                name: backend-api-service  # <--- Match the exact service name
                 port:
                   number: 80
