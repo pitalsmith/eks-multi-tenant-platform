@@ -29,7 +29,6 @@ jobs:
         ECR_REGISTRY: 763054201983.dkr.ecr.us-east-1.amazonaws.com
         ECR_REPOSITORY: backend-api
         IMAGE_TAG: latest
-      # We use 'working-directory' to force the runner inside your backend folder
       working-directory: ./src/backend
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -37,7 +36,7 @@ jobs:
 
     - name: Update Kubeconfig for EKS
       run: |
-        aws eks update-kubeconfig --region us-east-1 --name your-eks-cluster-name
+        aws eks update-kubeconfig --region us-east-1 --name dev-eks
 
     - name: Rollout Restart Deployment
       run: |
