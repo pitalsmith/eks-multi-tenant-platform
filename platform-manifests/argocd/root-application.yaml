@@ -8,17 +8,17 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/pitalsmith/internal-developer-platform.git'
+    repoURL: https://github.com/pitalsmith/internal-developer-platform.git
     targetRevision: HEAD
     path: platform-manifests
-  directory:
-      recurse: true  
+    directory:
+      recurse: true
   destination:
-    server: 'https://kubernetes.default.svc'
+    server: https://kubernetes.default.svc
     namespace: argocd
   syncPolicy:
     automated:
-      prune: true     # Automatically deletes resources from EKS if you delete them from Git
-      selfHeal: true  # Automatically fixes changes if someone tries to manually alter EKS
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
