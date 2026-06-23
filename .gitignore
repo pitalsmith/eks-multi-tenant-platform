@@ -1,0 +1,19 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfstate.backup
+.terraform.lock.hcl
+# AWS credentials
+.aws/
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+terraform-single/
+node_modules/
