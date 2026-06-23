@@ -53,8 +53,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: "app.35.174.163.241.nip.io"
-      http:
+    - http:  # <--- Removed strict 'host' filter to allow direct IP and multi-domain browser access!
         paths:
           - path: "/demo(/|$)(.*)"
             pathType: ImplementationSpecific
