@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: app-container
-          image: 763054201983.dkr.ecr.us-east-1.amazonaws.com/backend-api:v1
+          image: 763054201983.dkr.ecr.us-east-1.amazonaws.com/backend-api:v2
           ports:
             - containerPort: 8080
           resources:
