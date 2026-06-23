@@ -48,6 +48,7 @@ metadata:
   namespace: apps
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /  # <--- Automatically strip path prefixes!
 spec:
   ingressClassName: nginx
   rules:
