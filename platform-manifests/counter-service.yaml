@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: app-container
-          image: switch2k8s/counter-app:latest
+          image: nginx:stable-alpine
           ports:
             - containerPort: 80
           resources:
