@@ -4,7 +4,7 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({
     status: "success",
-    message: "Internal Developer Platform API is fully operational!",
+    message: "Internal Developer Platform API is fully operational! v2",
     timestamp: new Date().toISOString(),
     environment: "production-eks"
   }));

@@ -91,3 +91,19 @@ resource "aws_route" "private_nat" {
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.this.id
 }
+
+
+public_subnet_tags = {
+    "kubernetes.io/cluster/dev-eks" = "shared"
+    "kubernetes.io/role/elb"        = "1"
+  }
+
+  private_subnet_tags = {
+    "kubernetes.io/cluster/dev-eks"   = "shared"
+    "kubernetes.io/role/internal-elb" = "1"
+  }
+
+  tags = {
+    Environment = "dev"
+  }
+}
