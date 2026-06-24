@@ -7,7 +7,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend-api
-  namespace: apps
+  namespace: tenant-alpha
   labels:
     app: backend-api
 spec:
@@ -39,7 +39,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend-api-service
-  namespace: apps
+  namespace: tenant-alpha
 spec:
   type: ClusterIP # Keeps the API secure and accessible only inside the cluster network
   ports:
