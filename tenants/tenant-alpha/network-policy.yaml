@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tenant-isolation-policy
+  namespace: tenant-alpha
+spec:
+  podSelector: {} # Selects all pods inside tenant-alpha
+  policyTypes:
+  - Ingress
+  ingress:
+  # Rule 1: Allow internal traffic within the same tenant namespace
+  - from:
+    - podSelector: {}
+  # Rule 2: Allow external ingress traffic originating from your NGINX Controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          app.kubernetes.io/instance: ingress-nginx
