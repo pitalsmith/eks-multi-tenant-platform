@@ -1,12 +1,4 @@
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: tenant-alpha
-  labels:
-    tenant: alpha
-    tier: enterprise
----
-apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: tenant-alpha-quota
