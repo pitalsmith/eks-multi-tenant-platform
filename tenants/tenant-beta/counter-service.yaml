@@ -1,45 +1,3 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: counter-service-deployment
-  namespace: tenant-beta
-  labels:
-    app: counter-service
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: counter-service
-  template:
-    metadata:
-      labels:
-        app: counter-service
-    spec:
-      containers:
-        - name: app-container
-          image: nginxdemos/hello:plain-text
-          ports:
-            - containerPort: 80
-          resources:
-            limits:
-              memory: "256Mi"
-              cpu: "500m"
-            requests:
-              memory: "128Mi"
-              cpu: "250m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: counter-service-service
-  namespace: tenant-beta
-spec:
-  ports:
-    - port: 80
-      targetPort: 80
-      protocol: TCP
-  selector:
-    app: counter-service
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -53,12 +11,12 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - http:  # <--- Removed strict 'host' filter to allow direct IP and multi-domain browser access!
-        paths:
-          - path: "/counter(/|$)(.*)"
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: counter-service-service
-                port:
-                  number: 80
+  - http:
+      paths:
+      - path: /beta-counter(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: counter-service-service
+            port:
+              number: 80
