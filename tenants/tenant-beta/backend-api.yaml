@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apps
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api
+  namespace: tenant-beta
+  labels:
+    app: backend-api
+spec:
+  replicas: 2 # Runs two copies across your t3.small nodes for high availability
+  selector:
+    matchLabels:
+      app: backend-api
+  template:
+    metadata:
+      labels:
+        app: backend-api
+    spec:
+      containers:
+        - name: api-server
+          # 📦 Points directly to your AWS ECR Registry. 
+          # For testing before your CI pipeline builds your custom image, you can use "nginx:alpine" or "hashicorp/http-echo"
+          image: 763054201983.dkr.ecr.us-east-1.amazonaws.com/backend-api:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-api-service
+  namespace: tenant-beta
+spec:
+  type: ClusterIP # Keeps the API secure and accessible only inside the cluster network
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: backend-api
