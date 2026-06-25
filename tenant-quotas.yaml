@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: tenant-alpha-limits
+  namespace: tenant-alpha
+spec:
+  limits:
+  - default:
+      cpu: "300m"
+      memory: "256Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    type: Container
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tenant-alpha-quota
+  namespace: tenant-alpha
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: "1Gi"     # Fits safely within a single t3.small node's capacity
+    limits.cpu: "1.5"
+    limits.memory: "1.5Gi"   # Hard ceiling to keep the node stable
+    pods: "6"                  # Lowered max pods from 10 to 6
