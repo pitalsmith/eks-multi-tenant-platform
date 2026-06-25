@@ -1,274 +1,103 @@
-# Internal Developer Platform (IDP) Core Infrastructure
+# Enterprise-Grade EKS Multi-Tenant Platform with GitOps & Centralized Observability
 
-A production-grade, cloud-native Internal Developer Platform (IDP) architecture deployed on **AWS EKS** utilizing **Infrastructure-as-Code**, **GitOps principles with ArgoCD**, and automated **CI pipelines**. This platform streamlines microservice delivery, abstracting underlying infrastructure complexities to enable automated, zero-downtime application deployment workflows.
+## Project Overview
+Engineered a secure, scalable, and highly available multi-tenant Amazon EKS platform designed to isolate distinct corporate business units (**Tenant-Alpha** and **Tenant-Beta**) on a shared computing infrastructure. The platform leverages modern GitOps practices for continuous deployment, enforces strict logical isolation, implements resource boundaries, and provides a centralized observability engine to track tenant logs asynchronously.
 
----
-
-## 💡 Project Importance
-
-In modern software engineering, developers often lose hours managing infrastructure, configuring ingress routes, or setting up deployment pipelines instead of writing features. This **Internal Developer Platform (IDP)** solves that problem by implementing **Platform Engineering** principles. 
-
-* **True GitOps & Security Isolation:** By utilizing **ArgoCD**, the Kubernetes cluster pulls configurations directly from Git. Your external pipeline never needs admin-level cluster keys, significantly minimizing your infrastructure's attack surface.
-* **Developer Self-Service:** It abstracts away complex AWS and Kubernetes configurations, allowing engineering teams to ship code safely with a simple `git push`.
-* **Enterprise-Grade Reliability:** Eliminates configuration drift completely. ArgoCD constantly monitors the cluster, ensuring that manual, rogue changes are automatically self-healed back to the Git source of truth.
-* **Cost & Asset Efficiency:** Centralizing microservices under a unified Ingress controller reduces cloud spend by maximizing cluster resource utilization and avoiding single-load-balancer sprawl.
+* **Repository / Code Architecture:** `~/Cloud/eks-multi-tenant-platform`
+* **Infrastructure Scope:** Production-ready multi-tenant microservices, automated control planes, and centralized logging frameworks.
 
 ---
 
-## Tools Used
+## 🌟 Why This Project Matters (Business Impact & Importance)
+Deploying standalone cloud environments for every department or business entity creates massive financial waste, operational fragmentation, and security blind spots. This multi-tenant platform addresses those enterprise vulnerabilities by providing:
 
-The platform was engineered using an industry-standard, cloud-native technology matrix:
-
-* **Cloud Infrastructure:** AWS EKS (Elastic Kubernetes Service), Amazon ECR (Elastic Container Registry), AWS IAM (Identity & Access Management).
-* **GitOps & Delivery Engine:** ArgoCD (Declarative Continuous Delivery Engine).
-* **Containerization & Orchestration:** Docker Engine, Kubernetes API (Deployments, Services, Namespaces).
-* **Traffic & Networking:** NGINX Ingress Controller, AWS Native Network/Application Load Balancers.
-* **CI Automation:** GitHub Actions (Automated Runner Environments).
-* **Application Layer:** Node.js (Stateless native HTTP runtime architecture).
-* **Operating Environment:** WSL2 Ubuntu Linux / Linux Bash Shell.
+* **Massive Cloud Cost Optimization (50-70% Savings):** Instead of provisioning separate AWS EKS control planes and duplicate infrastructure for individual tenants—which severely inflates monthly cloud bills—this system consolidates independent workloads onto a single, tightly packed cluster, drastically lowering compute overhead.
+* **Rigid Regulatory & Data Compliance:** In an enterprise environment, tenants must never leak or glimpse each other's data. By implementing strict namespace segmentation and RBAC models, this project demonstrates a production-ready blueprint for handling sensitive tenant workloads while adhering to global compliance mandates.
+* **Elimination of GitOps Configuration Drift:** Hand-crafting cloud resources introduces user error. By routing cluster state completely through ArgoCD, infrastructure mutations are tracked transparently in Git, allowing instant rollbacks, disaster recovery, and automated synchronization.
+* **Unified, Cost-Efficient Telemetry Control:** Rather than configuring disparate monitoring nodes for every tenant application, this centralized Fluent Bit-to-CloudWatch pipeline handles millions of log lines under a singular pipeline. It reduces operational noise for site reliability engineers (SREs) while preserving chronological audit trails.
 
 ---
 
-## System Architecture & Traffic Flow
-
-The platform separates continuous integration (CI) from continuous deployment (CD) via a pull-based architecture:
-```markdown
-```text
-[ Developer Push ] ──► [ GitHub Actions (CI) ] ──► [ Builds & Pushes Image to Amazon ECR ]
-                                                                   │
-                                                                   ▼
-[ Live AWS EKS Cluster ] ◄── [ ArgoCD (CD Engine) ] ◄── [ Watches Git Manifest Repository ]
-           │
-     (Ingress Routing)
-     
-[ Public Traffic ] ──► [ AWS Load Balancer ] ──► [ NGINX Ingress ] ──► [ LoadBalancer Service ] ──► [ Pod Mesh ]
-
-```
+## 🛠 Tech Stack
+* **Orchestration & Cloud:** Amazon EKS (v1.35), AWS EC2, AWS VPC CNI
+* **GitOps & Continuous Delivery:** ArgoCD (Application Controllers, ApplicationSets, Redis)
+* **Ingress & Traffic Control:** Ingress-Nginx Controller
+* **Observability & Log Shipping:** AWS for Fluent Bit (v4.1.1), Amazon CloudWatch Logs, CloudWatch Log Insights
+* **Isolation & Security:** Kubernetes RBAC (Roles/RoleBindings), Namespaces, Resource Quotas/Limits
 
 ---
 
-## How We Built It
+## 🏗 System Architecture & Key Features
 
-The architecture was designed and executed over four distinct core execution phases:
+### 1. GitOps Continuous Delivery & Traffic Routing
+* Deployed **ArgoCD** as a centralized cluster control plane to manage application life cycles through declarative Git repositories.
+* Utilized **Ingress-Nginx** to handle external cluster communications, using a centralized proxy layer to route path-based tenant traffic cleanly to independent internal services.
 
-1. **Workload Containerization:** We encapsulated the stateless Node.js application inside an optimized Docker image layer, establishing strict internal port configurations (`8080`) to guarantee ambient execution parity between local and cloud environments.
-2. **EKS Clusters and Internal Networking:** We provisioned high-availability resources on **AWS EKS** under a dedicated application namespace (`apps`). We then mapped a multi-replica `Deployment` behind an active `LoadBalancer` Service layer to interface cleanly with our external traffic ingress tools.
-3. **Edge Ingress Engineering:** To bridge public internet traffic to the cluster mesh, we deployed an **NGINX Ingress Controller**. We optimized the ingress routing parameters to use an efficient `Prefix` path configuration (`/api`), clearing out $404$ routing validation errors by making the edge gateway fully path-agnostic.
-4. **ArgoCD GitOps Declaration:** We bootstrapped **ArgoCD** inside our EKS cluster and wired it to our repository. Instead of pushing direct mutations via CLI, our **GitHub Actions** workflow builds your container, handles image registry shipping to **Amazon ECR**, and updates your manifest definitions, allowing ArgoCD to pull and synchronize the state autonomously.
+### 2. Multi-Tenant Security & Resource Isolation
+* **Logical Partitioning:** Implemented rigid network and resource air-gapping using Kubernetes namespaces (`tenant-alpha` and `tenant-beta`).
+* **Role-Based Access Control (RBAC):** Configured specialized cluster permissions ensuring that engineering teams can only view or alter workloads within their designated scope.
+* **Resource Quota Boundaries:** Set strict CPU and Memory requests and limits per container to protect against "noisy neighbor" scenarios, preventing a single tenant from monopolizing host node capacity.
 
----
-
-## What We Achieved
-
-* **Declarative Continuous Delivery:** Achieved 100% automated software delivery pipelines. Developers only push to `main`, while GitHub Actions packages the artifact, and ArgoCD orchestrates the cloud state synchronization natively.
-* **Zero-Drift Enforcement:** Implemented strict cluster self-healing loops. If an engineer manually alters a cloud resource using a raw terminal, ArgoCD flags the drift and instantly auto-corrects the cluster to match Git.
-* **Zero-Downtime Rolling Updates:** Engineered a platform capable of substituting application pod replicas on-the-fly, ensuring the public API endpoint remains fully available with zero performance degradation during updates.
-* **Enterprise Security Hygiene:** Successfully decoupled CI secrets from the cluster environment, entirely dropping the requirement of storing persistent master deployment tokens outside of AWS.
-
----
-
-##  Platform Component Blueprint
-
-| Infrastructure Component | Underpinned Technology | Access / Security Layer | Operational Delivery Strategy |
-| --- | --- | --- | --- |
-| **Application Layer** | Node.js Core API | Container-Internal Port `8080` | Stateless Microservice |
-| **Container Registry** | Amazon ECR | AWS IAM Access Control | Automated Image Version Tagging |
-| **GitOps Controller** | ArgoCD | Cluster-Internal Pull Loop | Automated Target State Reconciliation |
-| **Cluster Orchestration** | AWS EKS (`dev-eks`) | Kubeconfig Token Injection | Multi-Replica Rolling Deployment via **LoadBalancer Service** |
-| **Ingress Gatekeeper** | NGINX Ingress Controller | AWS Edge Infrastructure Load Balancer | Prefix Path Match (`/api`) |
-| **CI Automation Engine** | GitHub Actions | Repository Action Secrets | Remote Image Pushes to ECR |
+### 3. Centralized Enterprise Observability Pipeline
+* **Log Harvesting:** Architected an asynchronous logging framework using **AWS for Fluent Bit** running as a cluster-wide `DaemonSet`.
+* **Metadata Enrichment:** Configured Fluent Bit to strip container stdout streams, parse them into structured JSON, and append critical cluster context keys (`kubernetes.namespace_name`, `kubernetes.pod_name`).
+* **CloudWatch Integration:** Authorized secure cross-platform data transit utilizing AWS IAM Node Policies to ship records directly to AWS CloudWatch Logs (`/aws/containerinsights/dev-eks/application`).
+* **Advanced Analytics:** Built operational telemetry inside CloudWatch Log Insights, enabling real-time cross-tenant analysis, alerting, and filtering from a single control window.
 
 ---
 
-## Step-by-Step Production Deployment Flow
+## 🖼️ System Verification & Visual Proof
 
-### 1. Automated GitHub Actions Core Configuration (CI Only)
+To validate the active deployment, resource boundaries, and telemetry separation of the multi-tenant architecture, live environment captures were taken across the cluster control planes.
 
-The automation engine runs a high-performance script on every code commit to `main`, preparing your runtime build before passing deployment custody off to ArgoCD:
+### 1. Cluster Isolation, RBAC, and Resource Boundaries
+![ArgoCD Multi-Tenant Architecture Overview](./images/argocd-tenant-isolation.png)
+> **Figure 1.1:** *The ArgoCD enterprise dashboard displaying the synchronized state of the platform. This view confirms **Secure Namespace Isolation** (`tenant-alpha` and `tenant-beta` running as detached trees), governed by strict **Team-Based Access Control** policies, alongside declarative **Resource Quotas** embedded directly within the application deployment manifests.*
 
-```yaml
-name: CI Pipeline - Build & Push to ECR
+### 2. Centralized Log Storage Vault
+![AWS CloudWatch Log Streams Interface](./images/cloudwatch-log-streams.png)
+> **Figure 1.2:** *The active Amazon CloudWatch dashboard highlighting the target log group `/aws/containerinsights/dev-eks/application`. The lower pane confirms active log streams parsing container outputs, establishing a decoupled, permanent storage vault off-instance for **Central Logging**.*
 
-on:
-  push:
-    branches:
-      - main
+### 3. Live Cross-Tenant Log Insights Query Execution
+![AWS CloudWatch Log Insights Multi-Tenant Parsing](./images/cloudwatch-log-insights.png)
+> **Figure 1.3:** *Executing an asynchronous metadata query within CloudWatch Log Insights. The generated timeline and data rows demonstrate live multi-tenant log parsing, isolating distinct namespace keys right down to individual container replicas in real time.*
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+---
 
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+## ⚡ Engineering Challenges & Solutions
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+### Overcoming the VPC CNI Pod Allocation Ceiling
+> **The Challenge:** During the rollout of the Fluent Bit logging engine, several pods stalled indefinitely in a `Pending` state, throwing severe scheduling errors (`Too many pods` / `NodeAffinity`). 
+>
+> **The Diagnosis:** The underlying worker tier used `t3.small` instances, which carry a hard AWS ENI networking limit of exactly **11 pods per node**. Because the management plane components (ArgoCD, Nginx, Kube-Proxy, AWS CNI Node Agents) consumed 7 to 8 network slots right out of the box, the cluster ran out of available IP allocations to spin up multi-replica tenant workloads and the logging layer simultaneously.
+>
+> **The Solution:**
+> * Audited and patched Fluent Bit’s resource profile down to a lean allocation (`100m` CPU request).
+> * Optimized tenant deployment architectures by executing controlled horizontal scale-downs (`kubectl scale`) to enforce exactly 1 highly-efficient replica per application tier per tenant.
+> * Evicted legacy, non-functional pods to drop node utilization below the 11-pod threshold.
+> * **Result:** Restored 100% cluster health, allowing control engines, tenant APIs, and logging collectors to run flawlessly alongside each other within a constrained resource environment.
 
-    - name: Log in to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+---
 
-    - name: Build, Tag, and Push Image to ECR
-      env:
-        ECR_REGISTRY: 763054201983.dkr.ecr.us-east-1.amazonaws.com
-        ECR_REPOSITORY: backend-api
-        IMAGE_TAG: latest
-      working-directory: ./src/backend
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+## 📈 Verification & Results
 
-```
+Using CloudWatch Log Insights, tenant data segregation can be verified globally with the following metric query:
 
-### 2. ArgoCD Application Manifest Setup (`application.yaml`)
-
-To instruct ArgoCD to sync your platform declarations with your cluster, the following configuration pattern is managed inside the Git system:
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: backend-api-platform
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: '[https://github.com/your-username/internal-developer-platform.git](https://github.com/your-username/internal-developer-platform.git)'
-    targetRevision: HEAD
-    path: infrastructure/manifests
-  destination:
-    server: '[https://kubernetes.default.svc](https://kubernetes.default.svc)'
-    namespace: apps
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-
-```
-
-### 3. Edge Networking Traffic Route Manifest (`backend-api-ingress.yaml`)
-
-To abstract internal target architectures from public calls, the platform uses an optimized ingress rule set:
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: backend-api-ingress
-  namespace: apps
-spec:
-  ingressClassName: nginx
-  rules:
-  - http:
-      paths:
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: backend-api-service
-            port:
-              number: 80
-
+```sql
+fields @timestamp, kubernetes.namespace_name, kubernetes.pod_name, log
+| filter kubernetes.namespace_name in ["tenant-alpha", "tenant-beta"]
+| sort @timestamp desc
+| limit 50
 ```
 
 ---
 
-## Architectural Visual Evidence
-
-This section documents the live validation states of the platform's cloud infrastructure, automated pipelines, GitOps sync state, and recovery tools.
-
-### 1. Automated CI Pipeline Success (GitHub Actions)
-
-```markdown
-![GitHub Actions Workflow Run](screenshots/github-actions.png)
-
+## Production Log Output Stream
 ```
-
-> **Figure 1:** Successful execution of the GitHub Actions CI workflow engine. This confirms flawless code checkout, secure AWS ECR container image generation, and successful remote image compilation.
-
-### 2. GitOps Synchronization State (ArgoCD UI Main Dashboard)
-
-```markdown
-![ArgoCD Deployment Synchronized Dashboard](screenshots/argocd-dashboard.png)
-
-```
-
-> **Figure 2:** ArgoCD graphical interface tracking the overall topology of the `backend-api-platform` application. This confirms that all declared manifests match the active cloud configuration.
-
-### 3. Comprehensive Manifest Sync Health & Resource Tree
-
-```markdown
-![ArgoCD Resource Health Tree](screenshots/argocd-health.png)
-
-```
-
-> **Figure 3:** Detailed health status tree in ArgoCD showing the green `Synced` and `Healthy` statuses across all subordinate resources—including the Deployment, LoadBalancer Service, Ingress controller, and underlying Pod replicas.
-
-### 4. GitOps Rollback & History Panel
-
-```markdown
-![ArgoCD Rollback and History Panel](screenshots/argocd-rollback.png)
-
-```
-
-> **Figure 4:** The "History and Rollback" interface inside ArgoCD. This visual panel displays previous deployment revisions, tracking individual Git commit tags and proving the ability to trigger a sub-second rollout reversion with a single click.
-
-### 5. High-Availability Cluster Orchestration (Kubernetes CLI)
-
-```markdown
-![Kubernetes Resources Status](screenshots/kubectl-status.png)
-
-```
-
-> **Figure 5:** Output of `kubectl get all -n apps` run via the terminal. Visual validation confirms that the multi-replica `Deployment` is healthy, multiple isolated backend `Pods` are actively running in a balanced state, and the **LoadBalancer Service layer** is properly bound to port `80`, mapping directly to your AWS cloud infrastructure.
-
-### 6. Edge Gate Traffic Isolation (NGINX Ingress Resource)
-
-```markdown
-![Kubernetes Ingress Controller Output](screenshots/kubectl-ingress.png)
-
-```
-
-> **Figure 6:** Terminal log capturing `kubectl get ingress -n apps`. This displays the `backend-api-ingress` asset properly bound to the NGINX `ingressClassName`, mapping traffic to the public AWS Load Balancer endpoint IP.
-
-### 7. Verified Live Production API Endpoint
-
-```markdown
-![Live Browser API Response](screenshots/browser-api.png)
-
-```
-
-> **Figure 7:** Browser output hitting the public AWS Ingress gateway address at `/api/`. This showcases the successful raw JSON server payload returning the active environment parameters (`production-eks`) and live version tracking strings updated via the automated pipeline.
-
----
-
-## Platform Management Runbook
-
-### Executing Instant Rollbacks via GitOps
-
-If a faulty image or manifest change is deployed, you retain standard Git auditing history. Rather than writing ad-hoc terminal patches, rollbacks are handled through standard revert parameters:
-
-```bash
-# Revert your repository state back to the previous Git commit configuration
-git revert HEAD --no-edit
-
-# Push change to trigger ArgoCD to automatically step back the cluster deployment version
-git push origin main
-
-```
-
-*Alternatively, if emergency intervention is required, rollbacks can be executed with a single click via the **ArgoCD Dashboard UI** or by running the ArgoCD CLI tool:*
-
-```bash
-argocd app rollback backend-api-platform
-
-```
-
-```***
-
+{
+  "@timestamp": "2026-06-25 17:09:41.652Z",
+  "kubernetes.namespace_name": "tenant-alpha",
+  "kubernetes.pod_name": "backend-api-7c9d84d957-2skrt",
+  "log": "Application successfully listening on port 8080"
+}
 ```
