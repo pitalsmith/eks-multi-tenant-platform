@@ -8,7 +8,7 @@ Engineered a secure, scalable, and highly available multi-tenant Amazon EKS plat
 
 ---
 
-## 🌟 Why This Project Matters (Business Impact & Importance)
+## Why This Project Matters (Business Impact & Importance)
 Deploying standalone cloud environments for every department or business entity creates massive financial waste, operational fragmentation, and security blind spots. This multi-tenant platform addresses those enterprise vulnerabilities by providing:
 
 * **Massive Cloud Cost Optimization (50-70% Savings):** Instead of provisioning separate AWS EKS control planes and duplicate infrastructure for individual tenants—which severely inflates monthly cloud bills—this system consolidates independent workloads onto a single, tightly packed cluster, drastically lowering compute overhead.
@@ -18,7 +18,7 @@ Deploying standalone cloud environments for every department or business entity 
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 * **Orchestration & Cloud:** Amazon EKS (v1.35), AWS EC2, AWS VPC CNI
 * **GitOps & Continuous Delivery:** ArgoCD (Application Controllers, ApplicationSets, Redis)
 * **Ingress & Traffic Control:** Ingress-Nginx Controller
@@ -27,7 +27,7 @@ Deploying standalone cloud environments for every department or business entity 
 
 ---
 
-## 🏗 System Architecture & Key Features
+## System Architecture & Key Features
 
 ### 1. GitOps Continuous Delivery & Traffic Routing
 * Deployed **ArgoCD** as a centralized cluster control plane to manage application life cycles through declarative Git repositories.
@@ -46,7 +46,7 @@ Deploying standalone cloud environments for every department or business entity 
 
 ---
 
-## 🖼️ System Verification & Visual Proof
+## System Verification & Visual Proof
 
 To validate the active deployment, resource boundaries, and telemetry separation of the multi-tenant architecture, live environment captures were taken across the cluster control planes.
 
@@ -64,7 +64,7 @@ To validate the active deployment, resource boundaries, and telemetry separation
 
 ---
 
-## ⚡ Engineering Challenges & Solutions
+## Engineering Challenges & Solutions
 
 ### Overcoming the VPC CNI Pod Allocation Ceiling
 > **The Challenge:** During the rollout of the Fluent Bit logging engine, several pods stalled indefinitely in a `Pending` state, throwing severe scheduling errors (`Too many pods` / `NodeAffinity`). 
@@ -79,7 +79,7 @@ To validate the active deployment, resource boundaries, and telemetry separation
 
 ---
 
-## 📈 Verification & Results
+## Verification & Results
 
 Using CloudWatch Log Insights, tenant data segregation can be verified globally with the following metric query:
 
